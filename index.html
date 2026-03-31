@@ -3,8 +3,6 @@
 <head>
 <title>Terrace Premier League</title>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
 
 body{
@@ -14,17 +12,19 @@ background:#0f172a;
 color:white;
 }
 
-header{
-background:#020617;
-padding:20px;
-font-size:24px;
-font-weight:bold;
-}
-
 .container{
 max-width:1100px;
 margin:auto;
 padding:20px;
+}
+
+h1{
+font-size:32px;
+margin-bottom:20px;
+}
+
+h2{
+margin-bottom:10px;
 }
 
 .grid{
@@ -36,35 +36,37 @@ gap:20px;
 .card{
 background:#1e293b;
 padding:20px;
-border-radius:12px;
+border-radius:14px;
 box-shadow:0 6px 20px rgba(0,0,0,0.5);
 margin-bottom:20px;
 }
 
 button{
-padding:12px;
+width:100%;
+padding:16px;
+margin-top:10px;
 border:none;
+border-radius:12px;
 background:#3b82f6;
 color:white;
-border-radius:8px;
 font-weight:bold;
+font-size:16px;
 cursor:pointer;
-width:100%;
-margin-top:10px;
+transition:.2s;
 }
 
 button:hover{
 background:#2563eb;
+transform:scale(1.05);
 }
 
 input,select{
 width:100%;
 padding:10px;
-margin-top:8px;
-margin-bottom:10px;
+margin-top:6px;
 border-radius:8px;
 border:none;
-background:#020617;
+background:#0f172a;
 color:white;
 }
 
@@ -74,17 +76,16 @@ border-collapse:collapse;
 margin-top:10px;
 }
 
-th,td{
+th{
+background:#111827;
+font-size:12px;
+color:#9ca3af;
+padding:10px;
+}
+
+td{
 padding:10px;
 text-align:center;
-}
-
-th{
-background:#020617;
-color:#94a3b8;
-}
-
-tr{
 border-bottom:1px solid #334155;
 }
 
@@ -92,57 +93,53 @@ border-bottom:1px solid #334155;
 display:none;
 }
 
-.page.active{
+.active{
 display:block;
 }
 
-.team{
-padding:10px;
-background:#020617;
-margin:5px;
-border-radius:6px;
+.team-card{
+background:#111827;
+padding:15px;
+margin-top:10px;
+border-radius:10px;
 }
 
 .player{
-margin:4px;
+padding:6px;
+cursor:pointer;
 }
 
-.score{
+.selected{
+background:#2563eb;
+border-radius:6px;
+}
+
+.scoreboard{
 font-size:28px;
 font-weight:bold;
+text-align:center;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<header>Terrace Premier League</header>
-
 <div class="container">
 
-<div id="dashboard" class="page active">
+<h1>Terrace Premier League</h1>
+
+<!-- DASHBOARD -->
+
+<div id="home" class="page active">
 
 <div class="grid">
 
 <div class="card">
+
 <h2>Points Table</h2>
 
 <table id="pointsTable">
-<thead>
-<tr>
-<th>Team</th>
-<th>P</th>
-<th>W</th>
-<th>L</th>
-<th>Pts</th>
-<th>RF</th>
-<th>RA</th>
-<th>NRR</th>
-</tr>
-</thead>
-<tbody></tbody>
 </table>
 
 </div>
@@ -151,48 +148,35 @@ font-weight:bold;
 
 <h2>Actions</h2>
 
-<button onclick="showPage('startMatch')">Start Match</button>
+<button onclick="showPage('start')">Start New Match</button>
+<button onclick="showPage('teams')">View Teams</button>
+<button onclick="showPage('history')">Match History</button>
 
-<button onclick="showPage('teamsPage')">View Teams</button>
+</div>
 
 </div>
 
 </div>
+
+<!-- TEAMS -->
+
+<div id="teams" class="page">
 
 <div class="card">
 
-<h2>Match History</h2>
-
-<ul id="history"></ul>
-
-</div>
-
-</div>
-
-
-<div id="teamsPage" class="page">
-
-<div class="card">
-
-<h2>Create Teams</h2>
-
-<input id="teamName" placeholder="Team Name">
-
-<textarea id="players" placeholder="11 players separated by comma"></textarea>
-
-<button onclick="addTeam()">Add Team</button>
-
-</div>
+<h2>Teams</h2>
 
 <div id="teamList"></div>
 
-<button onclick="showPage('dashboard')">Back</button>
+</div>
+
+<button onclick="showPage('home')">Back</button>
 
 </div>
 
+<!-- START MATCH -->
 
-
-<div id="startMatch" class="page">
+<div id="start" class="page">
 
 <div class="card">
 
@@ -201,15 +185,17 @@ font-weight:bold;
 <select id="teamA"></select>
 <select id="teamB"></select>
 
-<button onclick="choosePlayers()">Next</button>
+<button onclick="selectPlayers()">Next</button>
 
 </div>
 
+<button onclick="showPage('home')">Back</button>
+
 </div>
 
+<!-- PLAYER SELECT -->
 
-
-<div id="playersPage" class="page">
+<div id="players" class="page">
 
 <div class="card">
 
@@ -219,15 +205,15 @@ font-weight:bold;
 
 <div id="playersB"></div>
 
-<button onclick="tossPage()">Next</button>
+<button onclick="startToss()">Next</button>
 
 </div>
 
 </div>
 
+<!-- TOSS -->
 
-
-<div id="tossPage" class="page">
+<div id="toss" class="page">
 
 <div class="card">
 
@@ -236,23 +222,23 @@ font-weight:bold;
 <select id="tossWinner"></select>
 
 <select id="decision">
-<option value="bat">Bat</option>
-<option value="bowl">Bowl</option>
+<option>Bat</option>
+<option>Bowl</option>
 </select>
 
-<button onclick="startLive()">Start Match</button>
+<button onclick="startMatch()">Start Match</button>
 
 </div>
 
 </div>
 
+<!-- LIVE MATCH -->
 
-
-<div id="livePage" class="page">
+<div id="live" class="page">
 
 <div class="card">
 
-<div id="scoreboard" class="score"></div>
+<div id="score" class="scoreboard"></div>
 
 <div id="overs"></div>
 
@@ -260,11 +246,11 @@ font-weight:bold;
 
 <div class="card">
 
-Runs this over
-<input id="runs">
+<label>Runs this over</label>
+<input type="number" id="runsOver">
 
-Wickets
-<input id="wkts">
+<label>Wickets this over</label>
+<input type="number" id="wktsOver">
 
 <button onclick="updateOver()">Update Over</button>
 
@@ -274,167 +260,191 @@ Wickets
 
 </div>
 
+<!-- HISTORY -->
+
+<div id="history" class="page">
+
+<div class="card">
+
+<h2>Match History</h2>
+
+<ul id="matchHistory"></ul>
+
+</div>
+
+<button onclick="showPage('home')">Back</button>
+
+</div>
+
 </div>
 
 <script>
 
-let teams=JSON.parse(localStorage.getItem("teams")||"[]")
-let table=JSON.parse(localStorage.getItem("table")||"[]")
-let history=JSON.parse(localStorage.getItem("history")||"[]")
+let teams=[
+let teams=[
+{name:"Mumbai Indians",players:["Rohit Sharma","Ryan Rickelton","Tilak Varma","Hardik Pandya","Sherfane Rutherford","Naman Dhir","Shardul Thakur"]},
+{name:"Chennai Super Kings",players:["Sanju Samson","Ruturaj Gaikwad","Ayush Mhatre","Matthew Short","Shivam Dube","Kartik Sharma","Jamie Overton"]},
+{name:"Delhi Capitals",players:["KL Rahul","Axar Patel","Tristan Stubbs","David Miller","Nitish Rana","Ashutosh Sharma","Abishek Porel"]},
+{name:"Royal Challengers Bengaluru",players:["Virat Kohli","Philip Salt","Rajat Patidar","Jitesh Sharma","Tim David","Romario Shepherd","Krunal Pandya"]},
+{name:"Kolkata Knight Riders",players:["Finn Allen","Ajinkya Rahane","Cameron Green","Rinku Singh","Angkrish Raghuvanshi","Ramandeep Singh","Anukul Roy","Sunil Narine"]},
+{name:"Punjab Kings",players:["Prabhsimran Singh","Shreyas Iyer","Cooper Connolly","Nehal Wadhera","Shashank Singh","Marco Jansen","Marcus Stoinis"]},
+{name:"Lucknow Super Giants",players:["Rishabh Pant","Aiden Markram","Mitchell Marsh","Nicholas Pooran","Ayush Badoni","Abdul Samad","Shahbaz Ahmed"]},
+{name:"Sunrisers Hyderabad",players:["Abhishek Sharma","Travis Head","Ishan Kishan","Heinrich Klaasen","Nitish Kumar Reddy","Aniket Verma"]},
+{name:"Gujarat Titans",players:["Shubman Gill","Jos Buttler","Glenn Phillips","Rahul Tewatia","Rashid Khan","Washington Sundar","Sai Sudharsan"]},
+{name:"Rajasthan Royals",players:["Yashasvi Jaiswal","Riyan Parag","Vaibhav Sooryavanshi","Dhruv Jurel","Shimron Hetmyer","Ravindra Jadeja",]}
+]
 
-let match={}
+let table={}
 
-function save(){
-localStorage.setItem("teams",JSON.stringify(teams))
-localStorage.setItem("table",JSON.stringify(table))
-localStorage.setItem("history",JSON.stringify(history))
-}
-
-function showPage(p){
-
-document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"))
-document.getElementById(p).classList.add("active")
-
-}
-
-function addTeam(){
-
-let name=document.getElementById("teamName").value
-let players=document.getElementById("players").value.split(",")
-
-teams.push({name,players})
-
-table.push({
-name,
-played:0,
-win:0,
-loss:0,
-points:0,
-rf:0,
-ra:0
+teams.forEach(t=>{
+table[t.name]={played:0,wins:0,loss:0,points:0,runsFor:0,runsAgainst:0,oversFaced:0,oversBowled:0}
 })
 
-save()
+let match={}
+let history=[]
 
-renderTeams()
+function showPage(id){
+
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+
+document.getElementById(id).classList.add("active")
+
 renderTable()
+renderTeams()
+renderHistory()
+
+}
+
+function renderTable(){
+
+let html="<tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>RF</th><th>RA</th><th>NRR</th></tr>"
+
+for(let t in table){
+
+let d=table[t]
+
+let nrr=((d.runsFor/(d.oversFaced||1))-(d.runsAgainst/(d.oversBowled||1))).toFixed(2)
+
+html+=`<tr>
+<td>${t}</td>
+<td>${d.played}</td>
+<td>${d.wins}</td>
+<td>${d.loss}</td>
+<td>${d.points}</td>
+<td>${d.runsFor}</td>
+<td>${d.runsAgainst}</td>
+<td>${nrr}</td>
+</tr>`
+
+}
+
+document.getElementById("pointsTable").innerHTML=html
 
 }
 
 function renderTeams(){
 
 let div=document.getElementById("teamList")
+
 div.innerHTML=""
 
 teams.forEach(t=>{
 
-let d=document.createElement("div")
-d.className="card"
+let card=document.createElement("div")
 
-let html="<h3>"+t.name+"</h3>"
+card.className="team-card"
 
-t.players.forEach(p=>{
+card.innerHTML=`<b>${t.name}</b><br>${t.players.join(", ")}`
 
-html+="<div class='player'>"+p+"</div>"
-
-})
-
-d.innerHTML=html
-
-div.appendChild(d)
+div.appendChild(card)
 
 })
 
 }
 
-function renderTable(){
+function renderHistory(){
 
-let tbody=document.querySelector("#pointsTable tbody")
-tbody.innerHTML=""
+let ul=document.getElementById("matchHistory")
 
-table.forEach(t=>{
+ul.innerHTML=""
 
-let nrr=(t.rf/10)-(t.ra/10)
+history.forEach(h=>{
 
-let row=
+let li=document.createElement("li")
 
-`<tr>
-<td>${t.name}</td>
-<td>${t.played}</td>
-<td>${t.win}</td>
-<td>${t.loss}</td>
-<td>${t.points}</td>
-<td>${t.rf}</td>
-<td>${t.ra}</td>
-<td>${nrr.toFixed(2)}</td>
-</tr>`
+li.innerText=h
 
-tbody.innerHTML+=row
+ul.appendChild(li)
 
 })
 
 }
 
-function choosePlayers(){
+function selectPlayers(){
 
-let a=document.getElementById("teamA").value
-let b=document.getElementById("teamB").value
+let A=document.getElementById("teamA").value
+let B=document.getElementById("teamB").value
 
-match.teamA=a
-match.teamB=b
+match.teamA=A
+match.teamB=B
 
-showPage("playersPage")
-
-}
-
-function tossPage(){
-
-match.playA=[]
-match.playB=[]
-
-document.querySelectorAll(".pA:checked").forEach(x=>match.playA.push(x.value))
-document.querySelectorAll(".pB:checked").forEach(x=>match.playB.push(x.value))
-
-showPage("tossPage")
+showPage("players")
 
 }
 
-function startLive(){
+function startToss(){
 
-match.bat=document.getElementById("tossWinner").value
-match.score=0
-match.wkts=0
-match.over=0
+showPage("toss")
+
+}
+
+function startMatch(){
+
+match.scoreA=0
+match.scoreB=0
+match.wkA=0
+match.wkB=0
+match.overs=0
 match.innings=1
 
-showPage("livePage")
+showPage("live")
 
-updateBoard()
+updateScore()
 
 }
 
-function updateBoard(){
+function updateScore(){
 
-document.getElementById("scoreboard").innerText=
+let scoreText = match.innings==1
+? `${match.teamA} ${match.scoreA}/${match.wkA}`
+: `${match.teamB} ${match.scoreB}/${match.wkB}`
 
-match.bat+" "+match.score+"/"+match.wkts
+document.getElementById("score").innerText=scoreText
 
-document.getElementById("overs").innerText=
-
-"Overs "+match.over+"/10"
+document.getElementById("overs").innerText=`Overs ${match.overs}/10`
 
 }
 
 function updateOver(){
 
-let r=parseInt(document.getElementById("runs").value||0)
-let w=parseInt(document.getElementById("wkts").value||0)
+let r=parseInt(document.getElementById("runsOver").value)||0
+let w=parseInt(document.getElementById("wktsOver").value)||0
 
-match.score+=r
-match.wkts+=w
-match.over++
+if(match.innings==1){
 
-updateBoard()
+match.scoreA+=r
+match.wkA+=w
+
+}else{
+
+match.scoreB+=r
+match.wkB+=w
+
+}
+
+match.overs++
+
+updateScore()
 
 }
 
@@ -442,15 +452,8 @@ function endInnings(){
 
 if(match.innings==1){
 
-match.firstScore=match.score
 match.innings=2
-match.score=0
-match.wkts=0
-match.over=0
-
-match.bat=match.teamA==match.bat?match.teamB:match.teamA
-
-updateBoard()
+match.overs=0
 
 }else{
 
@@ -462,90 +465,37 @@ finishMatch()
 
 function finishMatch(){
 
-let winner=
+let winner = match.scoreA>match.scoreB ? match.teamA : match.teamB
+let loser = match.scoreA>match.scoreB ? match.teamB : match.teamA
 
-match.score>match.firstScore
-?match.bat
-:match.bat==match.teamA?match.teamB:match.teamA
+table[winner].wins++
+table[winner].points+=2
+table[winner].played++
 
-history.push(
+table[loser].loss++
+table[loser].played++
 
-match.teamA+" vs "+match.teamB+" winner "+winner
+history.push(`${match.teamA} ${match.scoreA} vs ${match.teamB} ${match.scoreB} → ${winner} won`)
 
-)
-
-table.forEach(t=>{
-
-if(t.name==winner){
-
-t.win++
-t.points+=2
+showPage("home")
 
 }
-
-if(t.name==match.teamA||t.name==match.teamB){
-
-t.played++
-
-}
-
-})
-
-save()
-
-renderTable()
-
-showPage("dashboard")
-
-}
-
-function loadTeams(){
-
-let a=document.getElementById("teamA")
-let b=document.getElementById("teamB")
-
-a.innerHTML=""
-b.innerHTML=""
 
 teams.forEach(t=>{
 
-a.innerHTML+=`<option>${t.name}</option>`
-b.innerHTML+=`<option>${t.name}</option>`
+let opt=document.createElement("option")
+opt.text=t.name
+teamA.add(opt)
+
+let opt2=document.createElement("option")
+opt2.text=t.name
+teamB.add(opt2)
 
 })
 
-let toss=document.getElementById("tossWinner")
-
-toss.innerHTML=
-
-`<option>${teams[0]?.name}</option>
-<option>${teams[1]?.name}</option>`
-
-}
-
-function renderHistory(){
-
-let ul=document.getElementById("history")
-
-ul.innerHTML=""
-
-history.forEach(h=>{
-
-let li=document.createElement("li")
-li.innerText=h
-ul.appendChild(li)
-
-})
-
-}
-
-renderTeams()
 renderTable()
-renderHistory()
-loadTeams()
 
 </script>
 
 </body>
-
 </html>
