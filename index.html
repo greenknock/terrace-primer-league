@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Terrace Premier League</title>
+<title>Terrace IPL</title>
 
 <style>
 
 body{
 font-family:Arial;
-margin:0;
 background:#0f172a;
 color:white;
+margin:0;
 }
 
 .container{
@@ -19,11 +19,12 @@ padding:20px;
 }
 
 h1{
-font-size:32px;
+font-size:28px;
 margin-bottom:20px;
 }
 
 h2{
+font-size:20px;
 margin-bottom:10px;
 }
 
@@ -36,28 +37,24 @@ gap:20px;
 .card{
 background:#1e293b;
 padding:20px;
-border-radius:14px;
-box-shadow:0 6px 20px rgba(0,0,0,0.5);
+border-radius:10px;
 margin-bottom:20px;
 }
 
 button{
+padding:12px;
 width:100%;
-padding:16px;
 margin-top:10px;
 border:none;
-border-radius:12px;
 background:#3b82f6;
 color:white;
-font-weight:bold;
-font-size:16px;
+border-radius:8px;
 cursor:pointer;
-transition:.2s;
+font-weight:bold;
 }
 
 button:hover{
 background:#2563eb;
-transform:scale(1.05);
 }
 
 input,select{
@@ -66,24 +63,16 @@ padding:10px;
 margin-top:6px;
 border-radius:8px;
 border:none;
-background:#0f172a;
+background:#111827;
 color:white;
 }
 
 table{
 width:100%;
 border-collapse:collapse;
-margin-top:10px;
 }
 
-th{
-background:#111827;
-font-size:12px;
-color:#9ca3af;
-padding:10px;
-}
-
-td{
+th,td{
 padding:10px;
 text-align:center;
 border-bottom:1px solid #334155;
@@ -99,25 +88,18 @@ display:block;
 
 .team-card{
 background:#111827;
-padding:15px;
-margin-top:10px;
-border-radius:10px;
+padding:10px;
+border-radius:8px;
+margin-bottom:10px;
 }
 
 .player{
-padding:6px;
 cursor:pointer;
+padding:5px;
 }
 
 .selected{
 background:#2563eb;
-border-radius:6px;
-}
-
-.scoreboard{
-font-size:28px;
-font-weight:bold;
-text-align:center;
 }
 
 </style>
@@ -127,11 +109,9 @@ text-align:center;
 
 <div class="container">
 
-<h1>Terrace Premier League</h1>
+<h1>Terrace IPL</h1>
 
-<!-- DASHBOARD -->
-
-<div id="home" class="page active">
+<div id="dashboard" class="page active">
 
 <div class="grid">
 
@@ -140,6 +120,19 @@ text-align:center;
 <h2>Points Table</h2>
 
 <table id="pointsTable">
+<thead>
+<tr>
+<th>Team</th>
+<th>P</th>
+<th>W</th>
+<th>L</th>
+<th>Pts</th>
+<th>RF</th>
+<th>RA</th>
+<th>NRR</th>
+</tr>
+</thead>
+<tbody></tbody>
 </table>
 
 </div>
@@ -148,19 +141,25 @@ text-align:center;
 
 <h2>Actions</h2>
 
-<button onclick="showPage('start')">Start New Match</button>
-<button onclick="showPage('teams')">View Teams</button>
-<button onclick="showPage('history')">Match History</button>
+<button onclick="openPage('teamsPage')">View Teams</button>
+
+<button onclick="openPage('startMatch')">Start Match</button>
 
 </div>
 
 </div>
 
+<div class="card">
+
+<h2>Match History</h2>
+
+<ul id="history"></ul>
+
 </div>
 
-<!-- TEAMS -->
+</div>
 
-<div id="teams" class="page">
+<div id="teamsPage" class="page">
 
 <div class="card">
 
@@ -168,15 +167,13 @@ text-align:center;
 
 <div id="teamList"></div>
 
-</div>
-
-<button onclick="showPage('home')">Back</button>
+<button onclick="openPage('dashboard')">Back</button>
 
 </div>
 
-<!-- START MATCH -->
+</div>
 
-<div id="start" class="page">
+<div id="startMatch" class="page">
 
 <div class="card">
 
@@ -185,24 +182,22 @@ text-align:center;
 <select id="teamA"></select>
 <select id="teamB"></select>
 
-<button onclick="selectPlayers()">Next</button>
+<button onclick="startPlayingSelection()">Next</button>
 
 </div>
 
-<button onclick="showPage('home')">Back</button>
-
 </div>
 
-<!-- PLAYER SELECT -->
-
-<div id="players" class="page">
+<div id="playingSelect" class="page">
 
 <div class="card">
 
 <h2>Select Playing 3</h2>
 
+<h3 id="teamATitle"></h3>
 <div id="playersA"></div>
 
+<h3 id="teamBTitle"></h3>
 <div id="playersB"></div>
 
 <button onclick="startToss()">Next</button>
@@ -211,9 +206,7 @@ text-align:center;
 
 </div>
 
-<!-- TOSS -->
-
-<div id="toss" class="page">
+<div id="tossPage" class="page">
 
 <div class="card">
 
@@ -222,8 +215,8 @@ text-align:center;
 <select id="tossWinner"></select>
 
 <select id="decision">
-<option>Bat</option>
-<option>Bowl</option>
+<option value="bat">Bat</option>
+<option value="bowl">Bowl</option>
 </select>
 
 <button onclick="startMatch()">Start Match</button>
@@ -232,25 +225,23 @@ text-align:center;
 
 </div>
 
-<!-- LIVE MATCH -->
-
-<div id="live" class="page">
+<div id="liveMatch" class="page">
 
 <div class="card">
 
-<div id="score" class="scoreboard"></div>
+<h2 id="scoreboard"></h2>
 
-<div id="overs"></div>
+<p id="overs"></p>
 
 </div>
 
 <div class="card">
 
 <label>Runs this over</label>
-<input type="number" id="runsOver">
+<input id="runsOver" type="number">
 
-<label>Wickets this over</label>
-<input type="number" id="wktsOver">
+<label>Wickets</label>
+<input id="wktsOver" type="number">
 
 <button onclick="updateOver()">Update Over</button>
 
@@ -260,19 +251,17 @@ text-align:center;
 
 </div>
 
-<!-- HISTORY -->
-
-<div id="history" class="page">
+<div id="scorecardPage" class="page">
 
 <div class="card">
 
-<h2>Match History</h2>
+<h2>Scorecard</h2>
 
-<ul id="matchHistory"></ul>
+<div id="scorecard"></div>
+
+<button onclick="openPage('dashboard')">Back</button>
 
 </div>
-
-<button onclick="showPage('home')">Back</button>
 
 </div>
 
@@ -280,7 +269,7 @@ text-align:center;
 
 <script>
 
-let teams=[
+const teams=[
 {name:"Mumbai Indians",players:["Rohit Sharma","Ryan Rickelton","Tilak Varma","Hardik Pandya","Sherfane Rutherford","Naman Dhir","Shardul Thakur"]},
 {name:"Chennai Super Kings",players:["Sanju Samson","Ruturaj Gaikwad","Ayush Mhatre","Matthew Short","Shivam Dube","Kartik Sharma","Jamie Overton"]},
 {name:"Delhi Capitals",players:["KL Rahul","Axar Patel","Tristan Stubbs","David Miller","Nitish Rana","Ashutosh Sharma","Abishek Porel"]},
@@ -292,121 +281,187 @@ let teams=[
 {name:"Gujarat Titans",players:["Shubman Gill","Jos Buttler","Glenn Phillips","Rahul Tewatia","Rashid Khan","Washington Sundar","Sai Sudharsan"]},
 {name:"Rajasthan Royals",players:["Yashasvi Jaiswal","Riyan Parag","Vaibhav Sooryavanshi","Dhruv Jurel","Shimron Hetmyer","Ravindra Jadeja",]}
 ]
-
-let table={}
-
-teams.forEach(t=>{
-table[t.name]={played:0,wins:0,loss:0,points:0,runsFor:0,runsAgainst:0,oversFaced:0,oversBowled:0}
-})
-
+  
 let match={}
-let history=[]
 
-function showPage(id){
-
+function openPage(id){
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
-
 document.getElementById(id).classList.add("active")
-
-renderTable()
-renderTeams()
-renderHistory()
-
-}
-
-function renderTable(){
-
-let html="<tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>RF</th><th>RA</th><th>NRR</th></tr>"
-
-for(let t in table){
-
-let d=table[t]
-
-let nrr=((d.runsFor/(d.oversFaced||1))-(d.runsAgainst/(d.oversBowled||1))).toFixed(2)
-
-html+=`<tr>
-<td>${t}</td>
-<td>${d.played}</td>
-<td>${d.wins}</td>
-<td>${d.loss}</td>
-<td>${d.points}</td>
-<td>${d.runsFor}</td>
-<td>${d.runsAgainst}</td>
-<td>${nrr}</td>
-</tr>`
-
-}
-
-document.getElementById("pointsTable").innerHTML=html
-
 }
 
 function renderTeams(){
-
 let div=document.getElementById("teamList")
-
 div.innerHTML=""
 
 teams.forEach(t=>{
+let d=document.createElement("div")
+d.className="team-card"
+d.innerHTML="<b>"+t.name+"</b><br>"+t.players.join(", ")
+div.appendChild(d)
+})
+}
 
-let card=document.createElement("div")
+function renderPoints(){
 
-card.className="team-card"
+let tbody=document.querySelector("#pointsTable tbody")
+tbody.innerHTML=""
 
-card.innerHTML=`<b>${t.name}</b><br>${t.players.join(", ")}`
+teams.forEach(t=>{
 
-div.appendChild(card)
+let nrr=0
+
+if(t.stats.rf>0||t.stats.ra>0){
+
+let forRate=t.stats.rf/10
+let againstRate=t.stats.ra/10
+nrr=(forRate-againstRate).toFixed(2)
+
+}
+
+tbody.innerHTML+=`
+<tr>
+<td>${t.name}</td>
+<td>${t.stats.p}</td>
+<td>${t.stats.w}</td>
+<td>${t.stats.l}</td>
+<td>${t.stats.pts}</td>
+<td>${t.stats.rf}</td>
+<td>${t.stats.ra}</td>
+<td>${nrr}</td>
+</tr>`
+})
+}
+
+function populateTeamSelect(){
+
+let a=document.getElementById("teamA")
+let b=document.getElementById("teamB")
+
+teams.forEach((t,i)=>{
+
+a.innerHTML+=`<option value="${i}">${t.name}</option>`
+b.innerHTML+=`<option value="${i}">${t.name}</option>`
 
 })
 
 }
 
-function renderHistory(){
+let playingA=[]
+let playingB=[]
 
-let ul=document.getElementById("matchHistory")
+function startPlayingSelection(){
 
-ul.innerHTML=""
+let a=teamA.value
+let b=teamB.value
 
-history.forEach(h=>{
+match.teamA=teams[a]
+match.teamB=teams[b]
 
-let li=document.createElement("li")
+document.getElementById("teamATitle").innerText=match.teamA.name
+document.getElementById("teamBTitle").innerText=match.teamB.name
 
-li.innerText=h
+renderPlayerSelect()
 
-ul.appendChild(li)
+openPage("playingSelect")
+
+}
+
+function renderPlayerSelect(){
+
+playersA.innerHTML=""
+playersB.innerHTML=""
+
+match.teamA.players.forEach(p=>{
+
+let d=document.createElement("div")
+d.className="player"
+d.innerText=p
+
+d.onclick=()=>togglePlayer(d,playingA,3)
+
+playersA.appendChild(d)
+
+})
+
+match.teamB.players.forEach(p=>{
+
+let d=document.createElement("div")
+d.className="player"
+d.innerText=p
+
+d.onclick=()=>togglePlayer(d,playingB,3)
+
+playersB.appendChild(d)
 
 })
 
 }
 
-function selectPlayers(){
+function togglePlayer(el,list,max){
 
-let A=document.getElementById("teamA").value
-let B=document.getElementById("teamB").value
+let name=el.innerText
 
-match.teamA=A
-match.teamB=B
+if(list.includes(name)){
 
-showPage("players")
+list.splice(list.indexOf(name),1)
+el.classList.remove("selected")
+
+}else{
+
+if(list.length>=max)return
+
+list.push(name)
+el.classList.add("selected")
+
+}
 
 }
 
 function startToss(){
 
-showPage("toss")
+tossWinner.innerHTML=`
+<option>${match.teamA.name}</option>
+<option>${match.teamB.name}</option>
+`
+
+openPage("tossPage")
 
 }
 
+let innings=1
+let scoreA=0
+let scoreB=0
+let wickets=0
+let over=0
+
 function startMatch(){
 
-match.scoreA=0
-match.scoreB=0
-match.wkA=0
-match.wkB=0
-match.overs=0
-match.innings=1
+openPage("liveMatch")
 
-showPage("live")
+updateScore()
+
+}
+
+function updateOver(){
+
+let r=parseInt(runsOver.value)||0
+let w=parseInt(wktsOver.value)||0
+
+if(innings===1){
+
+scoreA+=r
+
+}else{
+
+scoreB+=r
+
+}
+
+wickets+=w
+over++
+
+runsOver.value=""
+wktsOver.value=""
 
 updateScore()
 
@@ -414,45 +469,21 @@ updateScore()
 
 function updateScore(){
 
-let scoreText = match.innings==1
-? `${match.teamA} ${match.scoreA}/${match.wkA}`
-: `${match.teamB} ${match.scoreB}/${match.wkB}`
+let score=innings===1?scoreA:scoreB
 
-document.getElementById("score").innerText=scoreText
+scoreboard.innerText=`${score}/${wickets}`
 
-document.getElementById("overs").innerText=`Overs ${match.overs}/10`
-
-}
-
-function updateOver(){
-
-let r=parseInt(document.getElementById("runsOver").value)||0
-let w=parseInt(document.getElementById("wktsOver").value)||0
-
-if(match.innings==1){
-
-match.scoreA+=r
-match.wkA+=w
-
-}else{
-
-match.scoreB+=r
-match.wkB+=w
-
-}
-
-match.overs++
-
-updateScore()
+overs.innerText=`Overs ${over} / 10`
 
 }
 
 function endInnings(){
 
-if(match.innings==1){
+if(innings===1){
 
-match.innings=2
-match.overs=0
+innings=2
+wickets=0
+over=0
 
 }else{
 
@@ -464,37 +495,64 @@ finishMatch()
 
 function finishMatch(){
 
-let winner = match.scoreA>match.scoreB ? match.teamA : match.teamB
-let loser = match.scoreA>match.scoreB ? match.teamB : match.teamA
+match.teamA.stats.p++
+match.teamB.stats.p++
 
-table[winner].wins++
-table[winner].points+=2
-table[winner].played++
+match.teamA.stats.rf+=scoreA
+match.teamA.stats.ra+=scoreB
 
-table[loser].loss++
-table[loser].played++
+match.teamB.stats.rf+=scoreB
+match.teamB.stats.ra+=scoreA
 
-history.push(`${match.teamA} ${match.scoreA} vs ${match.teamB} ${match.scoreB} → ${winner} won`)
+let result=""
 
-showPage("home")
+if(scoreA>scoreB){
+
+match.teamA.stats.w++
+match.teamB.stats.l++
+
+match.teamA.stats.pts+=2
+
+result=`${match.teamA.name} beat ${match.teamB.name}`
+
+}else{
+
+match.teamB.stats.w++
+match.teamA.stats.l++
+
+match.teamB.stats.pts+=2
+
+result=`${match.teamB.name} beat ${match.teamA.name}`
 
 }
 
-teams.forEach(t=>{
+history.innerHTML+=`<li>${result}</li>`
 
-let opt=document.createElement("option")
-opt.text=t.name
-teamA.add(opt)
+renderPoints()
 
-let opt2=document.createElement("option")
-opt2.text=t.name
-teamB.add(opt2)
+showScorecard()
 
-})
+}
 
-renderTable()
+function showScorecard(){
+
+scorecard.innerHTML=`
+
+${match.teamA.name} ${scoreA}/3<br>
+${match.teamB.name} ${scoreB}/3
+
+`
+
+openPage("scorecardPage")
+
+}
+
+renderTeams()
+renderPoints()
+populateTeamSelect()
 
 </script>
 
 </body>
+
 </html>
