@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Terrace IPL</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#111827;
+color:white;
+text-align:center;
+margin:0;
+}
+
+header{
+background:#1f2937;
+padding:15px;
+font-size:22px;
+}
+
+button{
+padding:10px 18px;
+margin:10px;
+cursor:pointer;
+border:none;
+background:#2563eb;
+color:white;
+border-radius:5px;
+}
+
+input,select,textarea{
+padding:8px;
+margin:6px;
+}
+
+table{
+border-collapse:collapse;
+width:90%;
+margin:auto;
+margin-top:20px;
+}
+
+th,td{
+border:1px solid #374151;
+padding:8px;
+}
+
+.page{
+display:none;
+padding:20px;
+}
+
+.active{
+display:block;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>Terrace IPL</header>
+
+<div id="dashboard" class="page active">
+
+<h2>Points Table</h2>
+
+<table id="pointsTable"></table>
+
+<button onclick="openPage('teams')">View Teams</button>
+<button onclick="openPage('startMatch')">Start Match</button>
+
+<h2>Match History</h2>
+<ul id="history"></ul>
+
+</div>
+
+<div id="teams" class="page">
+
+<h2>Create Team</h2>
+
+<input id="teamName" placeholder="Team name">
+
+<br>
+
+<textarea id="players" rows="6" cols="40" placeholder="11 players, one per line"></textarea>
+
+<br>
+
+<button onclick="addTeam()">Add Team</button>
+<button onclick="openPage('dashboard')">Back</button>
+
+<h3>Teams</h3>
+<ul id="teamList"></ul>
+
+</div>
+
+<div id="startMatch" class="page">
+
+<h2>Select Teams</h2>
+
+<select id="teamA"></select>
+<select id="teamB"></select>
+
+<br>
+
+<button onclick="stepPlayers()">Next</button>
+
+<div id="playerSelect"></div>
+
+<div id="tossSection"></div>
+
+</div>
+
+<div id="liveMatch" class="page">
+
+<h2 id="scoreboard"></h2>
+<h3 id="overs"></h3>
+
+Runs this over
+<input id="runsOver" type="number">
+
+Wickets
+<input id="wktsOver" type="number">
+
+<br>
+
+<button onclick="updateOver()">Update Over</button>
+<button onclick="endInnings()">End Innings</button>
+
+</div>
+
+<script>
+
+let teams=JSON.parse(localStorage.getItem("teams")||"[]")
+let table=JSON.parse(localStorage.getItem("table")||"[]")
+let history=JSON.parse(localStorage.getItem("history")||"[]")
+
+let match=null
+
+function save(){
+
+localStorage.setItem("teams",JSON.stringify(teams))
+localStorage.setItem("table",JSON.stringify(table))
+localStorage.setItem("history",JSON.stringify(history))
+
+}
+
+function openPage(id){
+
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"))
+
+document.getElementById(id).classList.add("active")
+
+if(id==="dashboard")renderTable()
+
+if(id==="teams")renderTeams()
+
+if(id==="startMatch")loadTeams()
+
+}
+
+function addTeam(){
+
+let name=document.getElementById("teamName").value
+
+let players=document.getElementById("players").value.split("\n")
+
+if(players.length<3)return alert("Add players")
+
+teams.push({name,players})
+
+table.push({
+name,
+played:0,
+win:0,
+loss:0,
+points:0,
+runsFor:0,
+runsAgainst:0,
+ballsFor:0,
+ballsAgainst:0
+})
+
+save()
+
+renderTeams()
+
+}
+
+function renderTeams(){
+
+let list=document.getElementById("teamList")
+
+list.innerHTML=""
+
+teams.forEach(t=>{
+
+let li=document.createElement("li")
+
+li.innerText=t.name+" ("+t.players.length+" players)"
+
+list.appendChild(li)
+
+})
+
+}
+
+function loadTeams(){
+
+let a=document.getElementById("teamA")
+let b=document.getElementById("teamB")
+
+a.innerHTML=""
+b.innerHTML=""
+
+teams.forEach(t=>{
+
+a.add(new Option(t.name))
+b.add(new Option(t.name))
+
+})
+
+}
+
+function stepPlayers(){
+
+let A=document.getElementById("teamA").value
+let B=document.getElementById("teamB").value
+
+let ta=teams.find(t=>t.name===A)
+let tb=teams.find(t=>t.name===B)
+
+let div=document.getElementById("playerSelect")
+
+div.innerHTML="<h3>Select Playing 3</h3>"
+
+div.innerHTML+="<h4>"+A+"</h4>"
+
+ta.players.forEach(p=>{
+div.innerHTML+=`<label><input type="checkbox" class="A" value="${p}">${p}</label><br>`
+})
+
+div.innerHTML+="<h4>"+B+"</h4>"
+
+tb.players.forEach(p=>{
+div.innerHTML+=`<label><input type="checkbox" class="B" value="${p}">${p}</label><br>`
+})
+
+div.innerHTML+=`<button onclick="stepToss()">Next</button>`
+
+}
+
+function stepToss(){
+
+let A=document.getElementById("teamA").value
+let B=document.getElementById("teamB").value
+
+let div=document.getElementById("tossSection")
+
+div.innerHTML=`
+
+<h3>Toss</h3>
+
+<select id="tossWinner">
+
+<option>${A}</option>
+<option>${B}</option>
+
+</select>
+
+<select id="tossChoice">
+
+<option>Bat</option>
+<option>Bowl</option>
+
+</select>
+
+<br>
+
+<button onclick="startMatch()">Start Match</button>
+
+`
+
+}
+
+function startMatch(){
+
+let A=document.getElementById("teamA").value
+let B=document.getElementById("teamB").value
+
+match={
+A,
+B,
+scoreA:0,
+scoreB:0,
+wkA:0,
+wkB:0,
+balls:0,
+innings:1
+}
+
+openPage("liveMatch")
+
+updateScore()
+
+}
+
+function updateScore(){
+
+let text
+
+if(match.innings===1){
+
+text=match.A+" "+match.scoreA+"/"+match.wkA
+
+}else{
+
+text=match.B+" "+match.scoreB+"/"+match.wkB
+
+}
+
+document.getElementById("scoreboard").innerText=text
+
+document.getElementById("overs").innerText="Over "+Math.floor(match.balls/6)+"/10"
+
+}
+
+function updateOver(){
+
+let r=parseInt(document.getElementById("runsOver").value||0)
+let w=parseInt(document.getElementById("wktsOver").value||0)
+
+if(match.innings===1){
+
+match.scoreA+=r
+match.wkA+=w
+
+}else{
+
+match.scoreB+=r
+match.wkB+=w
+
+}
+
+match.balls+=6
+
+updateScore()
+
+}
+
+function endInnings(){
+
+if(match.innings===1){
+
+match.innings=2
+match.balls=0
+
+}else{
+
+finishMatch()
+
+}
+
+updateScore()
+
+}
+
+function finishMatch(){
+
+let tA=table.find(t=>t.name===match.A)
+let tB=table.find(t=>t.name===match.B)
+
+tA.played++
+tB.played++
+
+tA.runsFor+=match.scoreA
+tA.runsAgainst+=match.scoreB
+
+tB.runsFor+=match.scoreB
+tB.runsAgainst+=match.scoreA
+
+tA.ballsFor+=60
+tA.ballsAgainst+=60
+
+tB.ballsFor+=60
+tB.ballsAgainst+=60
+
+let winner
+
+if(match.scoreA>match.scoreB){
+
+tA.win++
+tB.loss++
+tA.points+=2
+
+winner=match.A
+
+}else{
+
+tB.win++
+tA.loss++
+tB.points+=2
+
+winner=match.B
+
+}
+
+history.push(match.A+" vs "+match.B+" → "+winner+" won")
+
+save()
+
+openPage("dashboard")
+
+}
+
+function renderTable(){
+
+let tableEl=document.getElementById("pointsTable")
+
+tableEl.innerHTML=`
+
+<tr>
+
+<th>Team</th>
+<th>P</th>
+<th>W</th>
+<th>L</th>
+<th>Pts</th>
+<th>Runs For</th>
+<th>Runs Against</th>
+<th>NRR</th>
+
+</tr>
+
+`
+
+table.forEach(t=>{
+
+let runRateFor=t.runsFor/(t.ballsFor/6||1)
+let runRateAgainst=t.runsAgainst/(t.ballsAgainst/6||1)
+
+let nrr=(runRateFor-runRateAgainst).toFixed(2)
+
+tableEl.innerHTML+=`
+
+<tr>
+
+<td>${t.name}</td>
+<td>${t.played}</td>
+<td>${t.win}</td>
+<td>${t.loss}</td>
+<td>${t.points}</td>
+<td>${t.runsFor}</td>
+<td>${t.runsAgainst}</td>
+<td>${nrr}</td>
+
+</tr>
+
+`
+
+})
+
+let hist=document.getElementById("history")
+
+hist.innerHTML=""
+
+history.forEach(h=>{
+
+let li=document.createElement("li")
+
+li.innerText=h
+
+hist.appendChild(li)
+
+})
+
+}
+
+renderTable()
+
+</script>
+
+</body>
+</html>
